@@ -3,14 +3,18 @@ from datetime import datetime
 from typing import Optional
 
 import psycopg
+from psycopg import conninfo
 import redis
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
 DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:postgres@db:5432/postgres")
+DB_SSLMODE = os.getenv("DB_SSLMODE", "prefer")
+DB_CONNECT_TIMEOUT = int(os.getenv("DB_CONNECT_TIMEOUT", "10"))
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 REDIS_LOCK_TTL_SECONDS = int(os.getenv("REDIS_LOCK_TTL_SECONDS", "30"))
 IDEMPOTENCY_CACHE_TTL_SECONDS = int(os.getenv("IDEMPOTENCY_CACHE_TTL_SECONDS", "3600"))
+DB_CONNINFO = conninfo.make_conninfo(DB_DSN, sslmode=DB_SSLMODE, connect_timeout=DB_CONNECT_TIMEOUT)
 
 r = redis.Redis.from_url(REDIS_URL, decode_responses=True)
 app = FastAPI(title="appointment-service")
@@ -65,7 +69,7 @@ def book(req: BookRequest, idempotency_key: Optional[str] = Header(default=None,
         raise HTTPException(status_code=409, detail="Busy, retry")
 
     try:
-        with psycopg.connect(DB_DSN) as conn:
+        with psycopg.connect(conninfo=DB_CONNINFO) as conn:
             with conn.cursor() as cur:
                 # Check durable idempotency record
                 cur.execute(
