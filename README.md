@@ -28,27 +28,30 @@ To get a feel for the system in action, you can run the services locally using D
 
 For those preparing for a system design interview or seeking to understand the system in depth, we recommend reading the documentation in the following order. This path is designed to build your knowledge from the ground up, from requirements to advanced architectural considerations.
 
-### Part 1: The Core System
+### Part 1: System Fundamentals
+1.  **[docs/00-overview.md](docs/00-overview.md):** High-level overview, goals, and core components.
+2.  **[docs/01-requirements.md](docs/01-requirements.md):** Functional and non-functional requirements.
+3.  **[docs/02-capacity-estimation.md](docs/02-capacity-estimation.md):** Back-of-the-envelope calculations for scale.
+4.  **[docs/03-domain-model.md](docs/03-domain-model.md):** Core entities and their relationships.
+5.  **[docs/04-api-design.md](docs/04-api-design.md):** API design for the services.
 
-1.  **[docs/00-overview.md](./docs/00-overview.md):** A high-level overview of the system, its goals, and its core components.
-2.  **[docs/01-requirements.md](./docs/01-requirements.md):** A detailed breakdown of the functional and non-functional requirements.
-3.  **[docs/05-core-architecture.md](./docs/05-core-architecture.md):** A tour of the microservices-based architecture, the services involved, and the data stores.
-4.  **[diagrams/01-high-level.mmd](./diagrams/01-high-level.mmd):** The high-level architecture diagram.
+### Part 2: Architecture & Implementation
+6.  **[docs/05-core-architecture.md](docs/05-core-architecture.md):** Microservices architecture, services, and data stores.
+7.  **[diagrams/01-high-level.mmd](diagrams/01-high-level.mmd):** High-level architecture diagram.
+8.  **[docs/07-data-model-postgres.md](docs/07-data-model-postgres.md):** Detailed PostgreSQL schema.
+9.  **[docs/08-availability-computation.md](docs/08-availability-computation.md):** Logic for computing and caching availability.
 
-### Part 2: Deep Dive & Key Challenges
+### Part 3: Key Challenges & Advanced Topics
+10. **[docs/06-correctness-concurrency.md](docs/06-correctness-concurrency.md):** Ensuring correctness and preventing double-booking.
+11. **[docs/09-notifications-waitlist.md](docs/09-notifications-waitlist.md):** Notification and waitlist systems.
+12. **[docs/10-security-privacy-compliance.md](docs/10-security-privacy-compliance.md):** Security, privacy, and HIPAA.
+13. **[docs/11-reliability-observability.md](docs/11-reliability-observability.md):** Reliability and observability.
+14. **[docs/12-scalability-partitioning.md](docs/12-scalability-partitioning.md):** Scaling and data partitioning.
 
-5.  **[docs/06-correctness-concurrency.md](./docs/06-correctness-concurrency.md):** A critical discussion of how to ensure correctness and prevent race conditions (e.g., double-booking). This is a key differentiator in an interview.
-6.  **[docs/08-availability-computation.md](./docs/08-availability-computation.md):** A deep dive into the logic of computing and caching provider availability.
-7.  **[docs/07-data-model-postgres.md](./docs/07-data-model-postgres.md):** The detailed PostgreSQL schema and data model.
-
-### Part 3: Advanced Topics & Interview Preparation
-
-8.  **[docs/09-notifications-waitlist.md](./docs/09-notifications-waitlist.md):** The design of the notification and waitlist systems.
-9.  **[docs/10-security-privacy-compliance.md](./docs/10-security-privacy-compliance.md):** A guide to handling security, privacy, and HIPAA compliance.
-10. **[docs/11-reliability-observability.md](./docs/11-reliability-observability.md):** Strategies for ensuring reliability and observability.
-11. **[docs/12-scalability-partitioning.md](./docs/12-scalability-partitioning.md):** Techniques for scaling the system and partitioning data.
-12. **[interview/01-golden-answer-outline.md](./interview/01-golden-answer-outline.md):** An outline for a "golden answer" in a system design interview.
-13. **[interview/02-follow-up-questions.md](./interview/02-follow-up-questions.md):** A list of common follow-up questions to prepare for.
+### Part 4: Interview Preparation
+15. **[docs/13-interview-playbook.md](docs/13-interview-playbook.md):** Playbook for the interview.
+16. **[interview/01-golden-answer-outline.md](interview/01-golden-answer-outline.md):** Outline for a "golden answer".
+17. **[interview/02-follow-up-questions.md](interview/02-follow-up-questions.md):** Common follow-up questions.
 
 ## Repository Structure
 
