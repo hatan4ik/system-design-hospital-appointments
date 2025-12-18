@@ -1,11 +1,15 @@
 import os, json
 from datetime import datetime, timedelta
 import psycopg, redis
+from psycopg import conninfo
 from fastapi import FastAPI, HTTPException, Query
 
 DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:postgres@db:5432/postgres")
+DB_SSLMODE = os.getenv("DB_SSLMODE", "prefer")
+DB_CONNECT_TIMEOUT = int(os.getenv("DB_CONNECT_TIMEOUT", "10"))
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 CACHE_TTL_SECONDS = int(os.getenv("AVAILABILITY_CACHE_TTL_SECONDS", "60"))
+DB_CONNINFO = conninfo.make_conninfo(DB_DSN, sslmode=DB_SSLMODE, connect_timeout=DB_CONNECT_TIMEOUT)
 
 r = redis.Redis.from_url(REDIS_URL, decode_responses=True)
 app = FastAPI(title="availability-service")
@@ -24,7 +28,7 @@ def availability(provider_id: str, start: datetime, end: datetime, slot_minutes:
     if cached:
         return json.loads(cached)
 
-    with psycopg.connect(DB_DSN) as conn:
+    with psycopg.connect(conninfo=DB_CONNINFO) as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
