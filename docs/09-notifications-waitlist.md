@@ -72,11 +72,12 @@ sequenceDiagram
     participant WS as Waitlist Service
     participant NS as Notification Service
     participant AS as Appointment Service
+    participant EventBus as Event Bus
 
     P->>API: Join waitlist for Dr. Smith
     API->>WS: Create waitlist_entry
 
-    ... Later ...
+    note over P,AS: Later
 
     AS->>EventBus: Publish appointment_cancelled
     WS->>EventBus: Consume appointment_cancelled
