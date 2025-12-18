@@ -33,7 +33,7 @@ def mock_redis():
     # Use fakeredis for in-memory redis
     server = fakeredis.FakeServer()
     r = fakeredis.FakeRedis(server=server, decode_responses=True)
-    with patch("main.r", r):
+    with patch("services.appointment_service.app.main.r", r):
         yield r
     r.close()
     server.close()
@@ -52,7 +52,7 @@ def mock_psycopg():
     Yields:
         MagicMock: A mock object representing the database cursor.
     """
-    with patch("main.psycopg") as mock_psycopg_module:
+    with patch("services.appointment_service.app.main.psycopg") as mock_psycopg_module:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_psycopg_module.connect.return_value.__enter__.return_value = mock_conn
@@ -83,7 +83,15 @@ def test_book_missing_idempotency_key():
     that the server correctly rejects requests missing this header with a
     400 Bad Request error.
     """
-    response = client.post("/appointments", json={})
+    req = BookRequest(
+        patient_id="p1",
+        provider_id="prov1",
+        visit_type="vt1",
+        start_ts=datetime(2025, 1, 1, 9, 0),
+        end_ts=datetime(2025, 1, 1, 9, 30),
+        location_id="loc1",
+    )
+    response = client.post("/appointments", json=req.model_dump(mode="json"))
     assert response.status_code == 400
     assert response.json() == {"detail": "Idempotency-Key required"}
 
