@@ -41,7 +41,7 @@ erDiagram
         string provider_id
         datetime start_time
         datetime end_time
-        string "type"
+        string schedule_type
     }
     VisitType {
         string id
@@ -104,7 +104,7 @@ erDiagram
     -   `id`: Unique identifier for the schedule entry.
     -   `provider_id`: Foreign key to the `Provider` entity.
     -   `start_time` & `end_time`: The start and end times of the schedule block.
-    -   `type`: The type of block (e.g., `AVAILABLE`, `BREAK`, `LUNCH`, `UNAVAILABLE`).
+    -   `schedule_type`: The type of block (e.g., `AVAILABLE`, `BREAK`, `LUNCH`, `UNAVAILABLE`).
 
 ### 2.5. Appointment
 
