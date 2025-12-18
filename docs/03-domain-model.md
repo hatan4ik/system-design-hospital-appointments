@@ -41,7 +41,7 @@ erDiagram
         string provider_id
         datetime start_time
         datetime end_time
-        string type (e.g., "available", "break", "blocked")
+        string type
     }
     VisitType {
         string id
