@@ -9,6 +9,8 @@ from pydantic import BaseModel
 
 DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:postgres@db:5432/postgres")
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+REDIS_LOCK_TTL_SECONDS = int(os.getenv("REDIS_LOCK_TTL_SECONDS", "30"))
+IDEMPOTENCY_CACHE_TTL_SECONDS = int(os.getenv("IDEMPOTENCY_CACHE_TTL_SECONDS", "3600"))
 
 r = redis.Redis.from_url(REDIS_URL, decode_responses=True)
 app = FastAPI(title="appointment-service")
@@ -29,6 +31,17 @@ def req_hash(req: BookRequest) -> str:
     s = json.dumps(req.model_dump(mode="json"), sort_keys=True).encode()
     return hashlib.sha256(s).hexdigest()
 
+def provider_day_lock_keys(req: BookRequest) -> tuple[str, int]:
+    """
+    Returns the Redis lock key and a stable Postgres advisory lock key for a provider-day.
+    Advisory lock uses 64-bit int derived from provider_id + day to serialize bookings per provider/day.
+    """
+    day = req.start_ts.date().isoformat()
+    redis_key = f"lock:{req.provider_id}:{day}"
+    lock_bytes = hashlib.sha256(f"{req.provider_id}:{day}".encode()).digest()[:8]
+    advisory_key = int.from_bytes(lock_bytes, byteorder="big", signed=False)
+    return redis_key, advisory_key
+
 @app.get("/healthz")
 def healthz():
     return {"ok": True}
@@ -39,20 +52,41 @@ def book(req: BookRequest, idempotency_key: Optional[str] = Header(default=None,
         raise HTTPException(status_code=400, detail="Idempotency-Key required")
 
     idem = f"idem:{idempotency_key}"
+    request_hash = req_hash(req)
     cached = r.get(idem)
     if cached:
-        return BookResponse(**json.loads(cached))
+        cached_obj = json.loads(cached)
+        if cached_obj.get("request_hash") != request_hash:
+            raise HTTPException(status_code=400, detail="Idempotency-Key has different payload")
+        return BookResponse(**cached_obj["response"])
 
-    # lock scope: provider + day
-    day = req.start_ts.date().isoformat()
-    lock_key = f"lock:{req.provider_id}:{day}"
-    if not r.set(lock_key, "1", nx=True, ex=5):
+    lock_key, advisory_key = provider_day_lock_keys(req)
+    if not r.set(lock_key, "1", nx=True, ex=REDIS_LOCK_TTL_SECONDS):
         raise HTTPException(status_code=409, detail="Busy, retry")
 
     try:
         with psycopg.connect(DB_DSN) as conn:
             with conn.cursor() as cur:
-                cur.execute("BEGIN;")
+                # Check durable idempotency record
+                cur.execute(
+                    "SELECT request_hash, response_ref FROM idempotency_keys WHERE idempotency_key = %s",
+                    (idempotency_key,),
+                )
+                idem_row = cur.fetchone()
+                if idem_row:
+                    existing_hash, response_ref = idem_row
+                    if existing_hash != request_hash:
+                        raise HTTPException(status_code=400, detail="Idempotency-Key has different payload")
+                    response_payload = json.loads(response_ref)
+                    r.set(idem, json.dumps({"request_hash": existing_hash, "response": response_payload}), ex=IDEMPOTENCY_CACHE_TTL_SECONDS)
+                    return BookResponse(**response_payload)
+
+                # Acquire per-provider/day advisory lock to serialize bookings even if Redis expires
+                cur.execute("SELECT pg_try_advisory_xact_lock(%s)", (advisory_key,))
+                locked = cur.fetchone()[0]
+                if not locked:
+                    raise HTTPException(status_code=409, detail="Busy, retry")
+
                 cur.execute(
                     """
                     SELECT 1 FROM appointments
@@ -82,10 +116,16 @@ def book(req: BookRequest, idempotency_key: Optional[str] = Header(default=None,
                     """,
                     (apt_id, req.patient_id, json.dumps(req.model_dump(mode="json"))),
                 )
-                cur.execute("COMMIT;")
+                cur.execute(
+                    """
+                    INSERT INTO idempotency_keys(idempotency_key, user_id, request_hash, response_ref)
+                    VALUES (%s,%s,%s,%s)
+                    """,
+                    (idempotency_key, req.patient_id, request_hash, json.dumps({"appointment_id": apt_id, "status": "CONFIRMED"})),
+                )
 
         resp = {"appointment_id": apt_id, "status": "CONFIRMED"}
-        r.set(idem, json.dumps(resp), ex=3600)
+        r.set(idem, json.dumps({"request_hash": request_hash, "response": resp}), ex=IDEMPOTENCY_CACHE_TTL_SECONDS)
         return BookResponse(**resp)
     finally:
         r.delete(lock_key)
