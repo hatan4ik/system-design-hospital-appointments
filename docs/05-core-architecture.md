@@ -35,10 +35,10 @@ graph TD
     end
 
     subgraph "Data Stores"
-        I[PostgreSQL (OLTP)]
-        J[Redis (Cache)]
-        K[Event Bus (Kafka)]
-        L[Search Index (Elasticsearch)]
+        I[PostgreSQL]
+        J[Redis]
+        K[Event Bus]
+        L[Search Index]
     end
 
     A --> B

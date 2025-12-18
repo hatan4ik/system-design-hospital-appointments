@@ -4,10 +4,10 @@ flowchart LR
   API --> AV[Availability Service]
   API --> PS[Provider Schedule Service]
 
-  AS --> PG[(Postgres)]
-  AV --> R[(Redis)]
+  AS --> PG[Postgres]
+  AV --> R[Redis]
   AV --> PG
-  AS --> BUS[(Event Bus)]
+  AS --> BUS[Event Bus]
   BUS --> NS[Notification Service]
   BUS --> WL[Waitlist Service]
   BUS --> AUD[Audit/Event Store]
