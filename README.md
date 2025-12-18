@@ -29,7 +29,14 @@ For a comprehensive understanding of the system design, we recommend reading the
 2.  **[docs/01-requirements.md](docs/01-requirements.md)**: Detailed functional and non-functional requirements.
 3.  **[docs/05-core-architecture.md](docs/05-core-architecture.md)**: The core architecture of the system.
 4.  **[docs/06-correctness-concurrency.md](docs/06-correctness-concurrency.md)**: A key interview differentiator, discussing correctness and concurrency.
-5.  **[interview/01-golden-answer-outline.md](interview/01-golden-answer-outline.md)**: An outline for a golden answer in an interview setting.
+
+## Interview Preparation
+
+For interview preparation, we recommend the following documents:
+
+- **[interview/01-golden-answer-outline.md](interview/01-golden-answer-outline.md)**: An outline for a golden answer in an interview setting.
+- **[interview/02-follow-up-questions.md](interview/02-follow-up-questions.md)**: A list of follow-up questions to expect.
+- **[docs/13-interview-playbook.md](docs/13-interview-playbook.md)**: A playbook for the interview.
 
 ## Documentation
 
@@ -49,5 +56,21 @@ The `docs` directory contains a comprehensive set of documents covering all aspe
 - **[11-reliability-observability.md](docs/11-reliability-observability.md)**: Reliability and observability.
 - **[12-scalability-partitioning.md](docs/12-scalability-partitioning.md)**: Scalability and partitioning.
 - **[13-interview-playbook.md](docs/13-interview-playbook.md)**: A playbook for the interview.
+
+## Diagrams
+
+The `diagrams` directory contains Mermaid diagrams that illustrate the system architecture:
+
+- **[01-high-level.mmd](diagrams/01-high-level.mmd)**: A high-level architecture diagram.
+- **[02-booking-sequence.mmd](diagrams/02-booking-sequence.mmd)**: A sequence diagram for the booking process.
+- **[03-availability-cache.mmd](diagrams/03-availability-cache.mmd)**: A diagram of the availability cache.
+
+## Labs
+
+The `labs` directory contains hands-on labs to experiment with the system:
+
+- **[01-local-demo](labs/01-local-demo)**: A docker-compose setup to run the services locally.
+- **[02-interview-drills](labs/02-interview-drills)**: A set of interview drills to practice.
+- **[03-correctness-tests](labs/03-correctness-tests)**: Tests to verify the correctness of the system.
 
 License: MIT
