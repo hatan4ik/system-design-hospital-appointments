@@ -1,0 +1,17 @@
+flowchart LR
+  Client[Patient App / Staff Portal] --> API[API Gateway]
+  API --> AS[Appointment Service]
+  API --> AV[Availability Service]
+  API --> PS[Provider Schedule Service]
+
+  AS --> PG[(Postgres)]
+  AV --> R[(Redis)]
+  AV --> PG
+  AS --> BUS[(Event Bus)]
+  BUS --> NS[Notification Service]
+  BUS --> WL[Waitlist Service]
+  BUS --> AUD[Audit/Event Store]
+  NS --> SMS[SMS/Email Provider]
+  AS --> INT[Integration Service]
+  INT --> EHR[EHR/EMR]
+  INT --> INS[Insurance]

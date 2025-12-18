@@ -1,0 +1,20 @@
+sequenceDiagram
+  participant C as Client
+  participant AS as Appointment Service
+  participant DB as Postgres
+  participant BUS as Event Bus
+  participant NS as Notification Service
+
+  C->>AS: POST /appointments (Idempotency-Key)
+  AS->>DB: BEGIN
+  AS->>DB: lock/check conflicts
+  alt conflict
+    AS->>DB: ROLLBACK
+    AS-->>C: 409
+  else ok
+    AS->>DB: INSERT appointment
+    AS->>DB: COMMIT
+    AS->>BUS: AppointmentCreated
+    AS-->>C: 201 appointment_id
+    BUS-->>NS: send confirmation
+  end

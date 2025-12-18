@@ -1,0 +1,6 @@
+flowchart TD
+  AV[Availability Service] -->|read-through| R[(Redis)]
+  AV --> DB[(Postgres)]
+  AS[Appointment Service] --> BUS[(Events)]
+  BUS --> AV
+  AV -->|invalidate provider/day| R
