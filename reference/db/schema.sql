@@ -1,4 +1,5 @@
 -- Postgres baseline schema (simplified)
+CREATE EXTENSION IF NOT EXISTS btree_gist;
 CREATE TABLE IF NOT EXISTS patients (
   id TEXT PRIMARY KEY,
   full_name TEXT NOT NULL,
@@ -37,6 +38,13 @@ CREATE TABLE IF NOT EXISTS appointments (
 
 CREATE INDEX IF NOT EXISTS idx_appointments_provider_start ON appointments(provider_id, start_ts);
 CREATE INDEX IF NOT EXISTS idx_appointments_patient_start ON appointments(patient_id, start_ts);
+ALTER TABLE appointments
+  ADD CONSTRAINT IF NOT EXISTS no_overlap_per_provider
+  EXCLUDE USING gist (
+    provider_id WITH =,
+    tstzrange(start_ts, end_ts) WITH &&
+  )
+  WHERE (status IN ('HELD','CONFIRMED'));
 
 CREATE TABLE IF NOT EXISTS idempotency_keys (
   idempotency_key TEXT PRIMARY KEY,
