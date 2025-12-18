@@ -1,3 +1,10 @@
+"""
+Unit tests for the Appointment service API.
+
+This module contains tests for the FastAPI application in main.py.
+It uses pytest fixtures to mock external dependencies like Redis and PostgreSQL,
+allowing for isolated and predictable testing of the API endpoints.
+"""
 import json
 from datetime import datetime
 from unittest.mock import MagicMock, patch
@@ -12,6 +19,17 @@ client = TestClient(app)
 
 @pytest.fixture
 def mock_redis():
+    """
+    Fixture to mock the Redis client.
+
+    This fixture patches the Redis client used in the main application with an
+    in-memory Redis implementation (fakeredis). This ensures that tests
+    do not depend on a running Redis instance and that the Redis commands
+    can be inspected.
+
+    Yields:
+        fakeredis.FakeRedis: An instance of the fake Redis client.
+    """
     # Use fakeredis for in-memory redis
     server = fakeredis.FakeServer()
     r = fakeredis.FakeRedis(server=server, decode_responses=True)
@@ -23,6 +41,17 @@ def mock_redis():
 
 @pytest.fixture
 def mock_psycopg():
+    """
+    Fixture to mock the psycopg2 PostgreSQL database driver.
+
+    This fixture patches the psycopg2 module to avoid actual database connections
+    during tests. It provides a mock cursor that can be used to control the
+    return values of database queries, allowing for the simulation of different
+    database states (e.g., finding or not finding conflicting appointments).
+
+    Yields:
+        MagicMock: A mock object representing the database cursor.
+    """
     with patch("main.psycopg") as mock_psycopg_module:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -32,17 +61,40 @@ def mock_psycopg():
 
 
 def test_healthz():
+    """
+    Test the /healthz endpoint.
+
+    This test ensures that the health check endpoint is functioning correctly,
+    which is crucial for monitoring and service discovery in a production
+    environment. It should return a 200 OK status and a specific JSON payload.
+    """
     response = client.get("/healthz")
     assert response.status_code == 200
     assert response.json() == {"ok": True}
 
 
 def test_book_missing_idempotency_key():
+    """
+    Test booking an appointment without an Idempotency-Key header.
+
+    The API requires an Idempotency-Key for POST requests to ensure that
+    duplicate requests are not processed multiple times. This test verifies
+    that the server correctly rejects requests missing this header with a
+    400 Bad Request error.
+    """
     response = client.post("/appointments", json={})
     assert response.status_code == 400
     assert response.json() == {"detail": "Idempotency-Key required"}
 
 def test_book_cached_response(mock_redis):
+    """
+    Test that a cached response is returned for a repeated Idempotency-Key.
+
+    When a request with the same Idempotency-Key is received, the service
+    should return the cached response from the first successful request.
+    This test ensures that the idempotency logic is working correctly by
+    pre-populating the cache and verifying that the cached response is returned.
+    """
     req = BookRequest(
         patient_id="p1",
         provider_id="prov1",
@@ -61,6 +113,14 @@ def test_book_cached_response(mock_redis):
     assert response.json() == cached_resp
 
 def test_book_busy_retry(mock_redis):
+    """
+    Test booking an appointment when a distributed lock is held.
+
+    To prevent race conditions when booking appointments for the same provider
+    on the same day, a distributed lock is used. This test simulates a scenario
+    where the lock is already held, and verifies that the service returns a
+    409 Conflict with a 'Busy, retry' message.
+    """
     req = BookRequest(
         patient_id="p1",
         provider_id="prov1",
@@ -79,6 +139,15 @@ def test_book_busy_retry(mock_redis):
     assert response.json() == {"detail": "Busy, retry"}
 
 def test_book_time_conflict(mock_redis, mock_psycopg):
+    """
+    Test booking an appointment that conflicts with an existing one.
+
+    This test checks the core logic for preventing double-booking. It uses the
+    mock_psycopg fixture to simulate a database query that finds an existing,
+    overlapping appointment. The test verifies that the service returns a 409
+    Conflict with a 'Time conflict' message and that the database transaction
+    is rolled back.
+    """
     req = BookRequest(
         patient_id="p1",
         provider_id="prov1",
@@ -98,6 +167,17 @@ def test_book_time_conflict(mock_redis, mock_psycopg):
 
 
 def test_book_successful(mock_redis, mock_psycopg):
+    """
+    Test the successful booking of a new appointment.
+
+    This is the "happy path" test case. It verifies that when there are no
+    conflicts or locks, a new appointment can be successfully created.
+    The test ensures that:
+    - The API returns a 200 OK status.
+    - The response contains a 'CONFIRMED' status and an appointment ID.
+    - A COMMIT is issued to the database.
+    - The successful response is cached for idempotency.
+    """
     req = BookRequest(
         patient_id="p1",
         provider_id="prov1",
