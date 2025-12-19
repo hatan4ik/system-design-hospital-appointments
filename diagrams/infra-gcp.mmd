@@ -1,4 +1,3 @@
-```mermaid
 flowchart TD
     %% Edge + ingress
     U[Users/Clients] -->|HTTPS| CA[Cloud Armor + LB/API Gateway]
@@ -45,4 +44,3 @@ flowchart TD
     GW -->|Logs/Metrics| O11Y
     CloudRun -.->|Service Accounts| SA[IAM Service Accounts]
     CloudRun -.->|Secrets/Config| SM[Secret Manager]
-```
