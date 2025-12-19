@@ -5,10 +5,14 @@ Start:
 docker compose up --build
 ```
 
-Seed synthetic data (200-1000 patients supported):
+Seed synthetic data (200-1000 patients supported, no real patient data):
 ```bash
 python seed_data.py --patients 500 --providers 25 --days 21 --truncate
 psql "postgresql://postgres:postgres@localhost:5432/postgres" -f seed.sql
+```
+Alternatively, load directly (requires psycopg installed on your host):
+```bash
+python seed_data.py --patients 500 --providers 25 --days 21 --truncate --load
 ```
 
 Try:
