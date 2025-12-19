@@ -17,7 +17,7 @@ FANG/MANGO-style system design repository for a hospital appointment and schedul
 - **Multi-Cloud Infrastructure Blueprints**: Terraform baselines for deploying the system on AWS, Azure, and GCP, providing a practical reference for multi-cloud architecture.
 
 ### Out of Scope
-- **User-Facing Applications**: This project does not include a production-ready UI, patient portal, or any other front-end application. The focus is on the back-end system design.
+- **User-Facing Applications**: This project includes a sample frontend application. However, it is not a production-ready UI, patient portal, or any other front-end application. The focus is on the back-end system design.
 - **Clinical and Financial Systems**: Full integration with Electronic Health Records (EHR/EMR), billing systems, or insurance providers is not part of this project.
 - **HIPAA Compliance**: While the design considers security and privacy, it is not certified as HIPAA compliant. The provided infrastructure baselines would require further hardening and auditing for a production healthcare environment.
 - **Production Data**: The system is designed to work with synthetic data for demonstration and testing purposes. No real patient data is used.
@@ -55,6 +55,7 @@ Diagram: [High-Level Architecture Diagram](diagrams/01-high-level.mmd)
     - [Appointment Service](services/appointment_service)
     - [Availability Service](services/availability_service)
     - [Notification Service](services/notification_service)
+    - [Frontend](services/frontend)
 - [Database Schema](reference/db/schema.sql)
 
 ### Operations & Infrastructure
