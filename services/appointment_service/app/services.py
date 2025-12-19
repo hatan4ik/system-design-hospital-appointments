@@ -70,3 +70,13 @@ async def book_appointment(req: schemas.BookRequest, idempotency_key: str):
         return schemas.BookResponse(**resp)
     finally:
         r.delete(lock_key)
+
+async def get_appointment(appointment_id: str):
+    conn = await database.get_db_connection()
+    try:
+        appointment_row = await crud.get_appointment(conn, appointment_id)
+        if not appointment_row:
+            raise HTTPException(status_code=404, detail="Appointment not found")
+        return schemas.Appointment(**appointment_row)
+    finally:
+        await conn.close()

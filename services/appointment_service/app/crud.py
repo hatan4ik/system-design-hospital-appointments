@@ -49,3 +49,9 @@ async def create_appointment_audit(conn, appointment_id: str, actor_id: str, req
         """,
         appointment_id, actor_id, json.dumps(req.model_dump(mode="json")),
     )
+
+async def get_appointment(conn, appointment_id: str):
+    return await conn.fetchrow(
+        "SELECT id, patient_id, provider_id, start_ts, end_ts, status, visit_type, location_id FROM appointments WHERE id = $1",
+        appointment_id,
+    )

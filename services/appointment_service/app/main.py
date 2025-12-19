@@ -15,3 +15,7 @@ async def book(req: schemas.BookRequest, idempotency_key: Optional[str] = Header
         raise HTTPException(status_code=400, detail="Idempotency-Key required")
     
     return await services.book_appointment(req, idempotency_key)
+
+@app.get("/appointments/{appointment_id}", response_model=schemas.Appointment)
+async def get_appointment(appointment_id: str):
+    return await services.get_appointment(appointment_id)

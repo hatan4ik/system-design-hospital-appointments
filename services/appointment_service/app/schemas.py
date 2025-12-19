@@ -12,3 +12,13 @@ class BookRequest(BaseModel):
 class BookResponse(BaseModel):
     appointment_id: str
     status: str
+
+class Appointment(BaseModel):
+    id: str
+    patient_id: str
+    provider_id: str
+    start_ts: datetime
+    end_ts: datetime
+    status: str
+    visit_type: str
+    location_id: str
