@@ -1,4 +1,3 @@
-```mermaid
 flowchart TD
     %% Edge protections and ingress
     U[Users/Clients] -->|HTTPS| WAF[WAF + AWS Shield]
@@ -46,4 +45,3 @@ flowchart TD
     GW -->|Metrics/Logs| CW
     ECS -.->|Task IAM Roles| IAM[IAM]
     ECS -.->|Secrets/Config| SSM[SSM Param Store/Secrets Manager]
-```
