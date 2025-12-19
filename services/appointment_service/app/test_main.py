@@ -207,3 +207,39 @@ async def test_idempotency_payload_mismatch(mock_redis, mock_asyncpg):
 
     cached_val = mock_redis.get("idem:idem-key")
     assert cached_val is None
+
+@pytest.mark.asyncio
+async def test_get_appointment_found(mock_asyncpg):
+    """
+    Test retrieving an existing appointment.
+    """
+    appointment_id = "apt_123"
+    appointment_data = {
+        "id": appointment_id,
+        "patient_id": "p1",
+        "provider_id": "prov1",
+        "start_ts": datetime(2025, 1, 1, 9, 0),
+        "end_ts": datetime(2025, 1, 1, 9, 15),
+        "status": "CONFIRMED",
+        "visit_type": "FOLLOW_UP_15",
+        "location_id": "loc1",
+    }
+    mock_asyncpg.fetchrow.return_value = appointment_data
+
+    response = client.get(f"/appointments/{appointment_id}")
+
+    assert response.status_code == 200
+    assert response.json()["id"] == appointment_id
+
+@pytest.mark.asyncio
+async def test_get_appointment_not_found(mock_asyncpg):
+    """
+    Test retrieving a non-existent appointment.
+    """
+    appointment_id = "apt_404"
+    mock_asyncpg.fetchrow.return_value = None
+
+    response = client.get(f"/appointments/{appointment_id}")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Appointment not found"}
