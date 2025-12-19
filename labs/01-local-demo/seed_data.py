@@ -268,6 +268,7 @@ def generate_appointments(
     ref_now = datetime.combine(start_date, time(0, 0), tzinfo=UTC) + timedelta(days=days // 2)
     patient_ids = [p.id for p in patients]
     frequent = set(rnd.sample(patient_ids, k=max(1, len(patient_ids) // 5)))
+    frequent_list = sorted(frequent)
     length_weights = [0.4, 0.35, 0.15, 0.1]
     for provider in providers:
         per_day = schedule_map.get(provider.id, {})
@@ -305,7 +306,7 @@ def generate_appointments(
                 start_ts = shift_start + SLOT * start_idx
                 end_ts = start_ts + SLOT * length_slots
                 if rnd.random() < 0.6:
-                    patient_id = rnd.choice(list(frequent))
+                    patient_id = rnd.choice(frequent_list)
                 else:
                     patient_id = rnd.choice(patient_ids)
                 visit_type = rnd.choice(VISIT_TYPES_BY_SLOTS[length_slots])
@@ -455,7 +456,9 @@ def write_output(sql: str, output_path: str | None, stdout: bool) -> None:
     if stdout or not output_path:
         sys.stdout.write(sql)
         return
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    output_dir = os.path.dirname(output_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as handle:
         handle.write(sql)
 

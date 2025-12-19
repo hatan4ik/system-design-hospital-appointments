@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    pass
+    REDIS_URL: str = "redis://redis:6379/0"
 
 settings = Settings()

@@ -5,6 +5,12 @@ Start:
 docker compose up --build
 ```
 
+Seed synthetic data (200-1000 patients supported):
+```bash
+python seed_data.py --patients 500 --providers 25 --days 21 --truncate
+psql "postgresql://postgres:postgres@localhost:5432/postgres" -f seed.sql
+```
+
 Try:
 ```bash
 curl -s "localhost:8080/availability?provider_id=prov_1&start=2025-12-18T15:00:00Z&end=2025-12-18T18:00:00Z&slot_minutes=15" | jq
