@@ -77,6 +77,12 @@ docker compose up --build
 curl -s localhost:8080/healthz | jq
 ```
 
+Seed synthetic data (200-1000 patients supported, no real patient data):
+```bash
+python labs/01-local-demo/seed_data.py --patients 500 --providers 25 --days 21 --truncate
+psql "postgresql://postgres:postgres@localhost:5432/postgres" -f labs/01-local-demo/seed.sql
+```
+
 Try a sample flow:
 
 ```bash
