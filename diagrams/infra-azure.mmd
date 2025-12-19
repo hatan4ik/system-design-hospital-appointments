@@ -1,4 +1,3 @@
-```mermaid
 flowchart TD
     %% Edge + ingress
     U[Users/Clients] -->|HTTPS| FD[Azure Front Door + WAF]
@@ -47,4 +46,3 @@ flowchart TD
     GW -->|Logs/Metrics| LA
     CAE -.->|Managed Identity| MI[Managed Identity]
     CAE -.->|Secrets/Config| KV[Key Vault]
-```
