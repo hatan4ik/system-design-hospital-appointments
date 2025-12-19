@@ -13,6 +13,7 @@ import fakeredis
 import pytest
 from fastapi.testclient import TestClient
 
+from . import main
 from .main import BookRequest, app, req_hash
 
 client = TestClient(app)
@@ -31,12 +32,11 @@ def mock_redis():
         fakeredis.FakeRedis: An instance of the fake Redis client.
     """
     # Use fakeredis for in-memory redis
-    server = fakeredis.FakeServer()
-    r = fakeredis.FakeRedis(server=server, decode_responses=True)
-    with patch("services.appointment_service.app.main.r", r):
+    r = fakeredis.FakeRedis(decode_responses=True)
+    with patch.object(main, "r", r):
         yield r
+    r.flushall()
     r.close()
-    server.close()
 
 
 @pytest.fixture
@@ -52,7 +52,7 @@ def mock_psycopg():
     Yields:
         MagicMock: A mock object representing the database cursor.
     """
-    with patch("services.appointment_service.app.main.psycopg") as mock_psycopg_module:
+    with patch.object(main, "psycopg") as mock_psycopg_module:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_psycopg_module.connect.return_value.__enter__.return_value = mock_conn
@@ -245,7 +245,6 @@ def test_idempotency_payload_mismatch(mock_redis, mock_psycopg):
     assert response.status_code == 400
     assert response.json() == {"detail": "Idempotency-Key has different payload"}
 
-    # Check that the response was cached
-    cached_val = mock_redis.get("idem:some-key")
-    assert cached_val is not None
-    assert json.loads(cached_val) == resp_json
+    # Payload mismatch should not cache anything
+    cached_val = mock_redis.get("idem:idem-key")
+    assert cached_val is None

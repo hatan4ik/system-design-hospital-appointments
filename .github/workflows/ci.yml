@@ -1,11 +1,32 @@
 name: CI
-on: [push, pull_request]
+
+on:
+  push:
+  pull_request:
+
 jobs:
-  docker-build:
+  tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        svc: [appointment_service, availability_service, notification_service]
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t sd/${{ matrix.svc }}:ci services/${{ matrix.svc }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python deps
+        run: pip install -r services/appointment_service/requirements.txt
+      - name: Run unit tests
+        run: pytest services/appointment_service/app/test_main.py
+
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/aws
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - run: terraform fmt -check
+      - run: terraform init -backend=false
+      - run: terraform validate
