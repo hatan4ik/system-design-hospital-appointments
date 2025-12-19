@@ -25,31 +25,48 @@ FANG/MANGO-style system design repository for a hospital appointment and schedul
 - Storage: Postgres + Redis.
 - Local demo: Nginx gateway on `localhost:8080`.
 
-Diagram: [diagrams/01-high-level.mmd](diagrams/01-high-level.mmd)
+Diagram: [High-Level Architecture Diagram](diagrams/01-high-level.mmd)
 
 ## Design highlights
-- Correctness: avoid double booking with advisory locks and a Postgres exclusion constraint. See [docs/06-correctness-concurrency.md](docs/06-correctness-concurrency.md) and [reference/db/schema.sql](reference/db/schema.sql).
-- Idempotency: request hash guard and Idempotency-Key semantics. See [docs/06-correctness-concurrency.md](docs/06-correctness-concurrency.md).
-- Availability caching: window-aware Redis caching and schedule rules. See [docs/08-availability-computation.md](docs/08-availability-computation.md).
+- Correctness: avoid double booking with advisory locks and a Postgres exclusion constraint. See [Correctness & Concurrency](docs/06-correctness-concurrency.md) and [Database Schema](reference/db/schema.sql).
+- Idempotency: request hash guard and Idempotency-Key semantics. See [Correctness & Concurrency](docs/06-correctness-concurrency.md).
+- Availability caching: window-aware Redis caching and schedule rules. See [Availability Computation](docs/08-availability-computation.md).
 
-## Documentation guide
-- Overview and requirements: [docs/00-overview.md](docs/00-overview.md), [docs/01-requirements.md](docs/01-requirements.md)
-- Domain and APIs: [docs/03-domain-model.md](docs/03-domain-model.md), [docs/04-api-design.md](docs/04-api-design.md), [reference/api/openapi-snippets.md](reference/api/openapi-snippets.md)
-- Architecture and data model: [docs/05-core-architecture.md](docs/05-core-architecture.md), [docs/07-data-model-postgres.md](docs/07-data-model-postgres.md)
-- Correctness and availability: [docs/06-correctness-concurrency.md](docs/06-correctness-concurrency.md), [docs/08-availability-computation.md](docs/08-availability-computation.md)
-- Reliability, scale, and security: [docs/11-reliability-observability.md](docs/11-reliability-observability.md), [docs/12-scalability-partitioning.md](docs/12-scalability-partitioning.md), [docs/10-security-privacy-compliance.md](docs/10-security-privacy-compliance.md)
-- Interview prep: [docs/13-interview-playbook.md](docs/13-interview-playbook.md), [interview/01-golden-answer-outline.md](interview/01-golden-answer-outline.md)
+## Content Index
 
-## Repository map
-| Path | Purpose |
-| --- | --- |
-| docs/ | Design narrative from requirements to scaling |
-| diagrams/ | Architecture and infra diagrams (Mermaid) |
-| services/ | FastAPI services (appointment, availability, notification) |
-| labs/ | Runnable demos and drills |
-| infra/ | Terraform baselines for AWS/Azure/GCP |
-| reference/ | API and DB references |
-| interview/ | Interview playbook and outlines |
+### System Design & Architecture
+- [Overall System Architecture](diagrams/01-high-level.mmd)
+- [Requirements & Capacity Estimation](docs/01-requirements.md)
+- [Core Architecture & Domain Model](docs/05-core-architecture.md)
+- [API Design & OpenAPI Snippets](docs/04-api-design.md)
+- [Data Model (Postgres)](docs/07-data-model-postgres.md)
+
+### Deep Dives
+- [Correctness & Concurrency (Preventing Double Booking)](docs/06-correctness-concurrency.md)
+- [Availability Computation & Caching](docs/08-availability-computation.md)
+- [Notifications & Waitlists](docs/09-notifications-waitlist.md)
+
+### Implementation
+- Services:
+    - [Appointment Service](services/appointment_service)
+    - [Availability Service](services/availability_service)
+    - [Notification Service](services/notification_service)
+- [Database Schema](reference/db/schema.sql)
+
+### Operations & Infrastructure
+- [Local Demo & Quickstart](labs/01-local-demo)
+- [Reliability & Observability](docs/11-reliability-observability.md)
+- [Scalability & Partitioning](docs/12-scalability-partitioning.md)
+- [Security, Privacy & Compliance](docs/10-security-privacy-compliance.md)
+- Infrastructure as Code (Terraform):
+    - [AWS](infra/aws)
+    - [Azure](infra/azure)
+    - [GCP](infra/gcp)
+
+### Interview Preparation
+- [Interview Playbook](docs/13-interview-playbook.md)
+- [Golden Answer Outline](interview/01-golden-answer-outline.md)
+- [Follow-up Questions](interview/02-follow-up-questions.md)
 
 ## Quickstart (local demo)
 Prereqs: Docker and Docker Compose.
