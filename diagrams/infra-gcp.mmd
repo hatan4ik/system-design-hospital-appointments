@@ -1,0 +1,48 @@
+```mermaid
+flowchart TD
+    %% Edge + ingress
+    U[Users/Clients] -->|HTTPS| CA[Cloud Armor + LB/API Gateway]
+    CA --> CRI[Cloud Run Ingress]
+
+    %% Compute
+    subgraph CloudRun[Cloud Run Services]
+        GW[gateway/nginx]
+        AS[appointment-service]
+        AV[availability-service]
+        NS[notification-service]
+    end
+    CRI --> GW
+    GW --> AS
+    GW --> AV
+    GW --> NS
+
+    %% Data plane
+    subgraph Data[Data Stores]
+        SQL[(Cloud SQL Postgres<br/>Regional, private IP)]
+        REDIS[(Memorystore Redis)]
+        SEARCH[(Elastic Cloud on GCP/OpenSearch)]
+        LOGS[(Cloud Logging/Storage)]
+    end
+    AS <-->|SQL/Transactions| SQL
+    AV -->|Reads| SQL
+    AS <-->|Cache/Holds/Idempotency| REDIS
+    AV <-->|Cache Availability| REDIS
+    AS -->|Index providers| SEARCH
+    GW -->|Access Logs| LOGS
+
+    %% Events
+    subgraph Events[Messaging/Eventing]
+        PS[Pub/Sub Topics]
+    end
+    AS --> PS
+    PS --> NS
+    PS -->|Audit/Analytics| LOGS
+
+    %% Observability & secrets
+    AS -->|Logs/Metrics/Traces| O11Y[Cloud Logging/Monitoring/Trace]
+    AV -->|Logs/Metrics/Traces| O11Y
+    NS -->|Logs/Metrics/Traces| O11Y
+    GW -->|Logs/Metrics| O11Y
+    CloudRun -.->|Service Accounts| SA[IAM Service Accounts]
+    CloudRun -.->|Secrets/Config| SM[Secret Manager]
+```

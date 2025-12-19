@@ -1,0 +1,50 @@
+```mermaid
+flowchart TD
+    %% Edge + ingress
+    U[Users/Clients] -->|HTTPS| FD[Azure Front Door + WAF]
+    FD --> APIM[API Management]
+    APIM --> CAI[Container Apps Ingress]
+
+    %% Compute
+    subgraph CAE[Container Apps Environment]
+        GW[gateway/nginx]
+        AS[appointment-service]
+        AV[availability-service]
+        NS[notification-service]
+    end
+    CAI --> GW
+    GW --> AS
+    GW --> AV
+    GW --> NS
+
+    %% Data plane
+    subgraph Data[Data Stores]
+        PG[(Postgres Flexible Server<br/>Zone redundant)]
+        REDIS[(Azure Cache for Redis Premium)]
+        SEARCH[(Cognitive Search/Elastic Cloud)]
+        LA[(Log Analytics / Storage)]
+    end
+    AS <-->|SQL/Transactions| PG
+    AV -->|Reads| PG
+    AS <-->|Cache/Holds/Idempotency| REDIS
+    AV <-->|Cache Availability| REDIS
+    AS -->|Index providers| SEARCH
+    GW -->|Access Logs| LA
+
+    %% Events
+    subgraph Events[Messaging/Eventing]
+        SB[Service Bus Topics/Queues]
+        EG[Event Grid]
+    end
+    AS --> SB
+    SB --> NS
+    EG -->|Audit/Archival| LA
+
+    %% Observability & secrets
+    AS -->|Logs/Metrics| LA
+    AV -->|Logs/Metrics| LA
+    NS -->|Logs/Metrics| LA
+    GW -->|Logs/Metrics| LA
+    CAE -.->|Managed Identity| MI[Managed Identity]
+    CAE -.->|Secrets/Config| KV[Key Vault]
+```

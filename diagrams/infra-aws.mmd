@@ -1,0 +1,49 @@
+```mermaid
+flowchart TD
+    %% Edge protections and ingress
+    U[Users/Clients] -->|HTTPS| WAF[WAF + AWS Shield]
+    WAF --> APIGW[API Gateway]
+    APIGW --> ALB[Application Load Balancer]
+
+    %% Compute layer
+    subgraph ECS[ECS Fargate Cluster]
+        GW[gateway/nginx]
+        AS[appointment-service]
+        AV[availability-service]
+        NS[notification-service]
+    end
+    ALB --> GW
+    GW --> AS
+    GW --> AV
+    GW --> NS
+
+    %% Data plane
+    subgraph Data[Data Stores]
+        RDS[(RDS Postgres<br/>Multi-AZ)]
+        REDIS[(ElastiCache Redis<br/>Cluster mode)]
+        OS[(OpenSearch)]
+        S3[(S3 Audit/Logs)]
+    end
+    AS <-->|SQL/Transactions| RDS
+    AV -->|Reads| RDS
+    AS <-->|Cache/Holds/Idempotency| REDIS
+    AV <-->|Cache Availability| REDIS
+    AS -->|Index providers| OS
+    GW -->|Access Logs| S3
+
+    %% Events
+    subgraph Events[Eventing]
+        EB[EventBridge/SNS+SQS]
+    end
+    AS --> EB
+    EB --> NS
+    EB -->|Waitlist/Audit| S3
+
+    %% Observability & secrets
+    AS -->|Metrics/Logs/Traces| CW[CloudWatch + X-Ray]
+    AV -->|Metrics/Logs/Traces| CW
+    NS -->|Metrics/Logs/Traces| CW
+    GW -->|Metrics/Logs| CW
+    ECS -.->|Task IAM Roles| IAM[IAM]
+    ECS -.->|Secrets/Config| SSM[SSM Param Store/Secrets Manager]
+```
