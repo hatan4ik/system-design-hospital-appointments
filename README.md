@@ -8,15 +8,19 @@ FANG/MANGO-style system design repository for a hospital appointment and schedul
 - Readers comparing AWS/Azure/GCP service mappings
 
 ## Scope
-### Goals
-- Model a real hospital scheduling problem with explicit constraints and invariants.
-- Demonstrate correctness patterns for concurrency and idempotent writes.
-- Provide runnable services and infra baselines for hands-on exploration.
 
-### Non-goals
-- Production-ready UI or patient portal.
-- Full EHR/EMR integration or billing workflows.
-- Real patient data; examples are synthetic.
+### In Scope
+- **Core Scheduling System**: A microservices-based system that models the core functionality of a hospital appointment scheduling platform. This includes appointment booking, rescheduling, and cancellation, as well as provider availability lookups.
+- **Correctness and Concurrency Patterns**: Demonstrating advanced techniques to prevent common scheduling issues like double booking. This is achieved through a combination of Redis-based distributed locks, PostgreSQL advisory locks, and database-level exclusion constraints.
+- **Idempotent API Design**: Implementation of an idempotent API for write operations using an `Idempotency-Key` header and a multi-layered check mechanism (in-memory cache and durable database storage).
+- **Reference Implementations**: Runnable FastAPI services for appointment, availability, and notification, designed for local and cloud deployment.
+- **Multi-Cloud Infrastructure Blueprints**: Terraform baselines for deploying the system on AWS, Azure, and GCP, providing a practical reference for multi-cloud architecture.
+
+### Out of Scope
+- **User-Facing Applications**: This project does not include a production-ready UI, patient portal, or any other front-end application. The focus is on the back-end system design.
+- **Clinical and Financial Systems**: Full integration with Electronic Health Records (EHR/EMR), billing systems, or insurance providers is not part of this project.
+- **HIPAA Compliance**: While the design considers security and privacy, it is not certified as HIPAA compliant. The provided infrastructure baselines would require further hardening and auditing for a production healthcare environment.
+- **Production Data**: The system is designed to work with synthetic data for demonstration and testing purposes. No real patient data is used.
 
 ## Architecture at a glance
 - Appointment service: booking, reschedule, cancel.
